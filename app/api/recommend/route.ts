@@ -44,6 +44,8 @@ export async function POST(req: Request) {
     const result = await recommendCars(parsed.data.answers);
     return NextResponse.json(result);
   } catch (err) {
+    console.error("[api/recommend] error:", err);
+
     if (err instanceof Anthropic.RateLimitError) {
       return NextResponse.json(
         { error: "Too many requests right now. Please try again shortly." },
@@ -52,7 +54,11 @@ export async function POST(req: Request) {
     }
     if (err instanceof Anthropic.APIError) {
       return NextResponse.json(
-        { error: `Model service error (${err.status}). Try again.` },
+        {
+          error: `Model service error (${err.status}): ${err.message}`,
+          type: err.name,
+          status: err.status,
+        },
         { status: 502 },
       );
     }
